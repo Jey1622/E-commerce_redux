@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import EmptyCart from "../assets/images/emptycart2.png";
 import { FaTrash, FaTrashAlt } from "react-icons/fa";
@@ -10,13 +10,32 @@ import {
   removeFromCart,
 } from "../redux/cartSlice";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const Cart = () => {
   const cart = useSelector((state) => state.cart);
   const [address, setAddress] = useState("main street,123");
   const [isModelOpen, setIsModelOpen] = useState(false);
+  const [email,setEmail]=useState("")
   const dispatch = useDispatch();
   const navigate=useNavigate()
+
+  const handleSubmit=async (e)=>{
+    try {
+      const responce=await axios.post('http://localhost:5000/api/v1/order',{
+        product:cart.products,
+        qty:cart.totalQuantity,
+        email:email
+      })
+      navigate('/checkout')
+    } catch (error) {
+      console.log(error.response.data.message)
+    }
+  }
+  const handleChange=async (e)=>{
+   setEmail(e.target.value)
+   console.log(e.target.value)
+  }
 
   return (
     <div className="container mx-auto py-8 min-h-96 px-4 md:px-16 lg:px-24">
@@ -100,13 +119,18 @@ const Cart = () => {
                 >
                   change Address
                 </button>
+                <p className="ml-2">
+                  Email Address :
+                  <input placeholder="Enter a email adress" value={email} onChange={handleChange}/>
+                  <span className="text-xs font-bold">{}</span>
+                </p>
               </div>
               <div className="flex justify-between mb-4">
                 <span>total Price:</span>
                 <span>{cart.totalPrice.toFixed(2)}</span>
               </div>
               <button className="w-full bg-red-600 text-white py-2 hover:bg-red-800"
-              onClick={()=>navigate('/checkout')}>
+              onClick={()=>handleSubmit()}>
                 Proceed to checkout
               </button>
             </div>
